@@ -69,7 +69,7 @@ class CreateUserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    # is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -83,7 +83,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return user.subscriptions.filter(author=obj).exists()
+        return obj.subscribers.filter(user=user).exists()
 
 
 class AvatarSerializer(serializers.Serializer):
