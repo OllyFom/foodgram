@@ -91,6 +91,7 @@ REST_FRAMEWORK = {
     ],
     'PAGE_SIZE': BASIC_PAGE_SIZE,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 # По всем требованиями документации
@@ -118,6 +119,5 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
 }
 
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
