@@ -118,10 +118,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return value
 
     def validate_tags(self, value):
-        # value — это список объектов Tag, а не ID
         seen = set()
         for tag in value:
-            tag_id = tag.id  # Получаем ID из объекта Tag
+            tag_id = tag.id
             if tag_id in seen:
                 raise serializers.ValidationError('Теги не должны повторяться.')
             seen.add(tag_id)
@@ -172,17 +171,26 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
+        if 'ingredients' not in validated_data:
+            raise serializers.ValidationError({
+                'ingredients': 'Это поле обязательно при обновлении рецепта.'
+            })
+        if 'tags' not in validated_data:
+            raise serializers.ValidationError({
+                'tags': 'Это поле обязательно при обновлении рецепта.'
+            })
+
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        if tags is not None:
-            instance.tags.set(tags)
-        if ingredients is not None:
-            instance.ingredients.clear()
-            RecipeIngredient.objects.filter(recipe=instance).delete()
-            self.create_ingredients(instance, ingredients)
+
+        instance.tags.set(tags)
+        instance.ingredients.clear()
+        RecipeIngredient.objects.filter(recipe=instance).delete()
+        self.create_ingredients(instance, ingredients)
+
         instance.save()
         return instance
 
