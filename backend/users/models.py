@@ -55,14 +55,13 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriptions',  # Подписки пользователя
+        related_name='subscriptions',
         verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribers',    # Подписчики автора
-        verbose_name='Автор'
+        related_name='subscribers',
     )
 
     class Meta:

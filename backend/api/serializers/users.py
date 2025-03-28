@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import password_validation, get_user_model
 from django.contrib.auth.password_validation import validate_password
-
+from api.serializers.recipe_mini import RecipeMiniSerializer
 
 from foodgram.constants import (
     EMAIL_MAX_LENGTH,
@@ -102,3 +102,31 @@ class SetPasswordSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         password_validation.validate_password(value, self.context['request'].user)
         return value
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'email', 'username', 'first_name', 'last_name',
+            'avatar', 'is_subscribed', 'recipes', 'recipes_count'
+        )
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        return user.subscriptions.filter(author=obj).exists()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.query_params.get('recipes_limit')
+        queryset = obj.recipes.all()
+        if limit and limit.isdigit():
+            queryset = queryset[:int(limit)]
+        return RecipeMiniSerializer(queryset, many=True).data
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()

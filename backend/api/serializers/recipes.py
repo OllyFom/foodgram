@@ -4,6 +4,7 @@ from api.serializers.users import UserProfileSerializer
 from recipes.models import Favorite, ShoppingCart
 from drf_extra_fields.fields import Base64ImageField
 from foodgram.constants import RECIPE_NAME_MAX_LENGTH
+from api.serializers.recipe_mini import RecipeMiniSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -37,6 +38,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+ #   image = Base64ImageField(read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -46,14 +49,16 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'name', 'image', 'text', 'cooking_time'
         )
 
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return None
+
+
     def get_tags(self, obj):
         from api.serializers.recipes import TagSerializer
         return TagSerializer(obj.tags.all(), many=True).data
-    
-    def validate_tags(self, value):
-        if not value:
-            raise serializers.ValidationError('Нужно выбрать хотя бы один тег.')
-        return value
 
 
     def get_ingredients(self, obj):
