@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from users.models import Subscription
 
 User = get_user_model()
 
@@ -40,3 +41,8 @@ class UserAdmin(BaseUserAdmin):
     )
 
     readonly_fields = ('last_login', 'date_joined')
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'author')
+    search_fields = ('user__username', 'author__username')

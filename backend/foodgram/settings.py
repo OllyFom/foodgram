@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from foodgram.constants import BASIC_PAGE_SIZE
+from foodgram.constants import BASIC_PAGE_SIZE, MAX_LIMIT_PAGE_SIZE
 
 
 load_dotenv()
@@ -91,10 +91,10 @@ REST_FRAMEWORK = {
     ],
     'PAGE_SIZE': BASIC_PAGE_SIZE,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE_QUERY_PARAM': 'limit',
+    'MAX_PAGE_SIZE': MAX_LIMIT_PAGE_SIZE,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
-
-# По всем требованиями документации
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
@@ -121,3 +121,16 @@ DJOSER = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+    },
+}
