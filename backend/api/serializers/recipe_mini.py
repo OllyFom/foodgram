@@ -5,6 +5,9 @@ from recipes.models import Recipe
 
 
 class RecipeMiniSerializer(serializers.ModelSerializer):
+    """
+    Базовый сериализатор рецепта.
+    """
     image = Base64ImageField()
 
     class Meta:

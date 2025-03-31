@@ -96,8 +96,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
-# По всем требованиями документации
-
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
