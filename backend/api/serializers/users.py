@@ -15,7 +15,7 @@ User = get_user_model()
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор профиля пользователя"""
+    """Сериализатор профиля пользователя."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
 
@@ -37,17 +37,22 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_avatar(self, obj):
         if obj.avatar and hasattr(obj.avatar, 'url'):
             request = self.context.get('request')
-            return request.build_absolute_uri(obj.avatar.url) if request else obj.avatar.url
+            return (
+                request.build_absolute_uri(obj.avatar.url)
+                if request else obj.avatar.url
+            )
         return None
 
 
 class AvatarSerializer(serializers.Serializer):
-    """Сериализатор аватара"""
+    """Сериализатор аватара."""
     avatar = Base64ImageField(required=True)
 
     def validate(self, data):
         if 'avatar' not in data:
-            raise serializers.ValidationError({"avatar": "Это поле обязательно."})
+            raise serializers.ValidationError(
+                {"avatar": "Это поле обязательно."}
+            )
         return data
 
     def update(self, instance, validated_data):
@@ -59,22 +64,33 @@ class AvatarSerializer(serializers.Serializer):
         request = self.context.get('request')
         if instance.avatar and hasattr(instance.avatar, 'url'):
             return {
-                'avatar': request.build_absolute_uri(instance.avatar.url)
-                if request else instance.avatar.url
+                'avatar': (
+                    request.build_absolute_uri(instance.avatar.url)
+                    if request else instance.avatar.url
+                )
             }
         return {'avatar': None}
 
 
 class CreateUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор регистрации пользователя."""
-    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
+        required=True
+    )
     username = serializers.RegexField(
         regex=USERNAME_REGEX.regex,
         max_length=USERNAME_MAX_LENGTH,
         required=True
     )
-    first_name = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True)
-    last_name = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True)
+    first_name = serializers.CharField(
+        max_length=NAME_MAX_LENGTH,
+        required=True
+    )
+    last_name = serializers.CharField(
+        max_length=NAME_MAX_LENGTH,
+        required=True
+    )
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -99,7 +115,8 @@ class CreateUserProfileSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
-                f'Пользователь с ником "{value}" уже существует, придумайте новый.'
+                'Пользователь с ником "{value}" уже существует, '
+                'придумайте новый.'
             )
         return value
 
@@ -117,7 +134,10 @@ class SetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
     def validate_new_password(self, value):
-        password_validation.validate_password(value, self.context['request'].user)
+        password_validation.validate_password(
+            value,
+            self.context['request'].user
+        )
         return value
 
 

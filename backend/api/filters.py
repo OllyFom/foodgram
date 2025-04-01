@@ -1,6 +1,5 @@
 from typing import Any
 
-from django_filters import rest_framework as filters
 from django_filters.rest_framework import (
     CharFilter,
     FilterSet,
@@ -15,6 +14,7 @@ from django.db.models import QuerySet
 
 class IngredientFilter(FilterSet):
     """Фильтр для поиска ингредиентов."""
+
     name = CharFilter(
         field_name='name',
         lookup_expr='istartswith',

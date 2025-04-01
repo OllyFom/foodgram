@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, permissions, status
+from rest_framework import (
+    viewsets, mixins, permissions, status
+)
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -49,7 +51,11 @@ class UserViewSet(
             return SubscriptionSerializer
         return UserProfileSerializer
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated]
+    )
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
@@ -89,7 +95,10 @@ class UserViewSet(
         permission_classes=[IsAuthenticated]
     )
     def set_password(self, request):
-        serializer = SetPasswordSerializer(data=request.data, context={'request': request})
+        serializer = SetPasswordSerializer(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
 
         user = request.user
@@ -125,7 +134,11 @@ class UserViewSet(
             if page is not None else Response(serializer.data)
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsAuthenticated]
+    )
     def subscribe(self, request, pk=None):
         user = request.user
         author = get_object_or_404(User, pk=pk)
@@ -142,7 +155,10 @@ class UserViewSet(
             )
 
         Subscription.objects.create(user=user, author=author)
-        serializer = SubscriptionSerializer(author, context={'request': request})
+        serializer = SubscriptionSerializer(
+            author,
+            context={'request': request}
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete

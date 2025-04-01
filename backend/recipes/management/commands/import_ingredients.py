@@ -14,14 +14,21 @@ class Command(BaseCommand):
         parser.add_argument(
             '--path',
             type=str,
-            default=os.path.join(settings.BASE_DIR, '..', 'data', 'ingredients.csv'),
+            default=os.path.join(
+                settings.BASE_DIR,
+                '..',
+                'data',
+                'ingredients.csv'
+            ),
             help='Путь до файла ingredients.csv'
         )
 
     def handle(self, *args, **options):
         path = options['path']
         if not os.path.exists(path):
-            self.stdout.write(self.style.ERROR(f'Файл не найден: {path}'))
+            self.stdout.write(
+                self.style.ERROR(f'Файл не найден: {path}')
+            )
             return
 
         with open(path, encoding='utf-8') as csvfile:
@@ -35,11 +42,16 @@ class Command(BaseCommand):
                         measurement_unit=measurement_unit.strip()
                     ))
                 except ValueError:
-                    self.stdout.write(self.style.WARNING(
-                        f'Пропущена строка: {row}'
-                    ))
+                    self.stdout.write(
+                        self.style.WARNING(f'Пропущена строка: {row}')
+                    )
 
-        Ingredient.objects.bulk_create(ingredients, ignore_conflicts=True)
-        self.stdout.write(self.style.SUCCESS(
-            f'Импортировано {len(ingredients)} ингредиентов'
-        ))
+        Ingredient.objects.bulk_create(
+            ingredients,
+            ignore_conflicts=True
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Импортировано {len(ingredients)} ингредиентов'
+            )
+        )
