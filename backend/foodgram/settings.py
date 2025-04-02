@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
 from django.core.management.utils import get_random_secret_key
 
-from foodgram.constants import BASIC_PAGE_SIZE, MAX_LIMIT_PAGE_SIZE
+from dotenv import load_dotenv
 
+from foodgram.constants import BASIC_PAGE_SIZE, MAX_LIMIT_PAGE_SIZE
 
 load_dotenv()
 

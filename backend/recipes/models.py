@@ -1,12 +1,16 @@
-import shortuuid
 from django.conf import settings
 from django.db import models
 
-from foodgram.constants import (COLOR_NAME_MAX_LENGTH,
-                                INGREDIENT_MEASURE_MAX_LENGTH,
-                                INGREDIENT_NAME_MAX_LENGTH,
-                                RECIPE_NAME_MAX_LENGTH, TAG_NAME_MAX_LENGTH,
-                                UUID_MAX_LENGTH)
+import shortuuid
+
+from foodgram.constants import (
+    COLOR_NAME_MAX_LENGTH,
+    INGREDIENT_MEASURE_MAX_LENGTH,
+    INGREDIENT_NAME_MAX_LENGTH,
+    RECIPE_NAME_MAX_LENGTH,
+    TAG_NAME_MAX_LENGTH,
+    UUID_MAX_LENGTH,
+)
 
 
 class Tag(models.Model):

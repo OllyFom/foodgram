@@ -1,13 +1,15 @@
 from django.contrib.auth import get_user_model, password_validation
+
 from rest_framework import serializers
+
 from drf_extra_fields.fields import Base64ImageField
 
 from api.serializers.recipe_mini import RecipeMiniSerializer
 from foodgram.constants import (
     EMAIL_MAX_LENGTH,
-    USERNAME_MAX_LENGTH,
     NAME_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
+    USERNAME_MAX_LENGTH,
     USERNAME_REGEX,
 )
 

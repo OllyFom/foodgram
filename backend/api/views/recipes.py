@@ -2,16 +2,14 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient,
-    ShoppingCart, ShortLink, Tag
-)
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
@@ -20,9 +18,18 @@ from api.serializers.recipes import (
     RecipeMiniSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
-    TagSerializer
+    TagSerializer,
 )
 from foodgram.constants import MAX_LIMIT_PAGE_SIZE
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    ShortLink,
+    Tag,
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
