@@ -34,7 +34,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - static:/app/static
@@ -42,7 +42,6 @@ services:
       - type: image
         source: netkann/foodgram_frontend:latest
         target: /usr/share/nginx/html
-        image_path: /usr/share/nginx/html
     depends_on:
       - backend
     restart: always
