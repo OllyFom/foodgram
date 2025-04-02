@@ -10,19 +10,31 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']
-    list_display = ('id', 'email', 'username', 'first_name', 'last_name', 'is_staff')
+    list_display = (
+        'id', 'email', 'username',
+        'first_name', 'last_name', 'is_staff'
+    )
     list_filter = ('is_staff', 'is_superuser', 'is_active')
     search_fields = ('email', 'username', 'first_name', 'last_name')
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Личная информация'), {
-            'fields': ('username', 'first_name', 'last_name', 'avatar')
+            'fields': (
+                'username', 'first_name',
+                'last_name', 'avatar'
+            )
         }),
         (_('Права доступа'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+            'fields': (
+                'is_active', 'is_staff',
+                'is_superuser', 'groups',
+                'user_permissions'
+            )
         }),
-        (_('Важные даты'), {'fields': ('last_login', 'date_joined')}),
+        (_('Важные даты'), {
+            'fields': ('last_login', 'date_joined')
+        }),
     )
 
     add_fieldsets = (
@@ -41,6 +53,7 @@ class UserAdmin(BaseUserAdmin):
     )
 
     readonly_fields = ('last_login', 'date_joined')
+
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):

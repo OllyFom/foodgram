@@ -1,8 +1,12 @@
-from django.conf import settings
+# from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
+from recipes.models import (
+    Favorite, Ingredient, Recipe, RecipeIngredient,
+    ShoppingCart, ShortLink, Tag
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -13,21 +17,12 @@ from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers.recipes import (
     IngredientSerializer,
+    RecipeMiniSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
-    TagSerializer,
-    RecipeMiniSerializer
+    TagSerializer
 )
 from foodgram.constants import MAX_LIMIT_PAGE_SIZE
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    ShortLink,
-    Tag
-)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -90,9 +85,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         short_link, _ = ShortLink.objects.get_or_create(recipe=recipe)
         domain = request.build_absolute_uri('/')[:-1]
         short_url = f"{domain}/s/{short_link.short_code}"
-        return Response({'short-link': short_url}, status=status.HTTP_200_OK)
+        return Response(
+            {'short-link': short_url},
+            status=status.HTTP_200_OK
+        )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsAuthenticated]
+    )
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -102,7 +104,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         ShoppingCart.objects.create(user=user, recipe=recipe)
-        serializer = RecipeMiniSerializer(recipe, context={'request': request})
+        serializer = RecipeMiniSerializer(
+            recipe,
+            context={'request': request}
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
@@ -147,7 +152,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return response
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
     def favorite(self, request, pk=None):
         recipe = self.get_object()
         user = request.user
@@ -158,7 +167,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             Favorite.objects.create(user=user, recipe=recipe)
-            serializer = RecipeMiniSerializer(recipe, context={'request': request})
+            serializer = RecipeMiniSerializer(
+                recipe,
+                context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         favorite = Favorite.objects.filter(user=user, recipe=recipe)

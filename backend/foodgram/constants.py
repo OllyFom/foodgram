@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 
+
 # Пагинация
 BASIC_PAGE_SIZE = 6
 MAX_LIMIT_PAGE_SIZE = 100
@@ -18,10 +19,13 @@ COLOR_NAME_MAX_LENGTH = 7
 
 RECIPE_NAME_MAX_LENGTH = 256
 
-UUID_MAX_LENGTH=22
+UUID_MAX_LENGTH = 22
 
-# Регулярное выражение для имени пользователя
+# Регулярное выражение для пользователя
 USERNAME_REGEX = RegexValidator(
     regex=r'^[\w.@+-]+$',
-    message='Имя пользователя может содержать только буквы, цифры и символы @/./+/-/_'
+    message=(
+        'Имя пользователя может содержать только буквы, '
+        'цифры и символы @/./+/-/_'
+    )
 )
