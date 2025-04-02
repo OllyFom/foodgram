@@ -1,6 +1,5 @@
 from django.core.validators import RegexValidator
 
-
 # Пагинация
 BASIC_PAGE_SIZE = 6
 MAX_LIMIT_PAGE_SIZE = 100

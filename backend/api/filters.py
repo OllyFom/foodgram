@@ -1,15 +1,16 @@
 from typing import Any
 
+from django.db.models import QuerySet
+
 from django_filters.rest_framework import (
+    AllValuesMultipleFilter,
+    BooleanFilter,
     CharFilter,
     FilterSet,
-    BooleanFilter,
     NumberFilter,
-    AllValuesMultipleFilter
 )
 
 from recipes.models import Ingredient, Recipe
-from django.db.models import QuerySet
 
 
 class IngredientFilter(FilterSet):
