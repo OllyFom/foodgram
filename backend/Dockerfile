@@ -7,6 +7,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+COPY data/ingredients.csv /app/data/ingredients.csv
 
 RUN mkdir -p /app/static /app/media
 
