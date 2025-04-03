@@ -1,5 +1,5 @@
 # # build env
-# FROM node:21.7.1-alpine
+# FROM node:21.7.1-alpine AS build
 # WORKDIR /app
 # COPY package*.json ./
 # RUN npm install
@@ -7,8 +7,13 @@
 # RUN npm run build
 # CMD cp -r build result_build
 
-# Минимальный образ Nginx
-FROM nginx:1.25.4-alpine
+FROM node:21.7.1-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . ./
+RUN npm run build
 
-# Копируем готовую статику
-COPY build/ /usr/share/nginx/html/
+FROM nginx:1.25.4-alpine
+COPY --from=build /app/build/ /usr/share/nginx/html/
+COPY --from=build /app/docs/ /usr/share/nginx/html/api/docs/
