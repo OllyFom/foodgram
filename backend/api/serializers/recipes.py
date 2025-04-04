@@ -54,16 +54,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'name',
-            'image',
-            'text',
-            'cooking_time',
+            'id', 'tags', 'author', 'ingredients',
+            'is_favorited', 'is_in_shopping_cart',
+            'name', 'image', 'text', 'cooking_time',
         )
 
     def get_image(self, obj):
@@ -84,11 +77,17 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
-        return user.is_authenticated and obj.favorited_by.filter(user=user).exists()
+        return (
+            user.is_authenticated
+            and obj.favorited_by.filter(user=user).exists()
+        )
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
-        return user.is_authenticated and obj.in_carts.filter(user=user).exists()
+        return (
+            user.is_authenticated
+            and obj.in_carts.filter(user=user).exists()
+        )
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -116,12 +115,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'ingredients',
-            'tags',
-            'image',
-            'name',
-            'text',
-            'cooking_time',
+            'ingredients', 'tags', 'image',
+            'name', 'text', 'cooking_time',
         )
 
     def validate_ingredients(self, value):
@@ -177,7 +172,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         if len(value) > RECIPE_NAME_MAX_LENGTH:
             raise serializers.ValidationError(
-                f'Название не должно превышать {RECIPE_NAME_MAX_LENGTH} символов.'
+                f'Название не должно превышать '
+                f'{RECIPE_NAME_MAX_LENGTH} символов.'
             )
         return value
 
@@ -196,16 +192,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return value
 
     def create_ingredients(self, recipe, ingredients_data):
-        RecipeIngredient.objects.bulk_create(
-            [
-                RecipeIngredient(
-                    recipe=recipe,
-                    ingredient=Ingredient.objects.get(id=item['id']),
-                    amount=item['amount'],
-                )
-                for item in ingredients_data
-            ]
-        )
+        RecipeIngredient.objects.bulk_create([
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(id=item['id']),
+                amount=item['amount'],
+            )
+            for item in ingredients_data
+        ])
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -220,13 +214,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if 'ingredients' not in validated_data:
-            raise serializers.ValidationError(
-                {'ingredients': 'Это поле обязательно при обновлении рецепта.'}
-            )
+            raise serializers.ValidationError({
+                'ingredients': 'Это поле обязательно при '
+                               'обновлении рецепта.'
+            })
         if 'tags' not in validated_data:
-            raise serializers.ValidationError(
-                {'tags': 'Это поле обязательно при обновлении рецепта.'}
-            )
+            raise serializers.ValidationError({
+                'tags': 'Это поле обязательно при обновлении рецепта.'
+            })
 
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
