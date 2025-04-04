@@ -53,7 +53,7 @@ class AvatarSerializer(serializers.Serializer):
     def validate(self, data):
         if 'avatar' not in data:
             raise serializers.ValidationError(
-                {"avatar": "Это поле обязательно."}
+                {'avatar': 'Это поле обязательно.'}
             )
         return data
 
@@ -110,14 +110,14 @@ class CreateUserProfileSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                f'Пользователь с эл. адресом "{value}" уже существует.'
+                f'Пользователь с эл. адресом \'{value}\' уже существует.'
             )
         return value
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
-                'Пользователь с ником "{value}" уже существует, '
+                f'Пользователь с ником \'{value}\' уже существует, '
                 'придумайте новый.'
             )
         return value
