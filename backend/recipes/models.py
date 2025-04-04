@@ -4,7 +4,6 @@ from django.db import models
 import shortuuid
 
 from foodgram.constants import (
-    COLOR_NAME_MAX_LENGTH,
     INGREDIENT_MEASURE_MAX_LENGTH,
     INGREDIENT_NAME_MAX_LENGTH,
     RECIPE_NAME_MAX_LENGTH,
@@ -20,11 +19,6 @@ class Tag(models.Model):
         max_length=TAG_NAME_MAX_LENGTH,
         unique=True,
         verbose_name='Название тега',
-    )
-    color = models.CharField(
-        max_length=COLOR_NAME_MAX_LENGTH,
-        unique=True,
-        verbose_name='Цвет в HEX (например, #49B64E)',
     )
     slug = models.SlugField(
         max_length=TAG_NAME_MAX_LENGTH,
@@ -155,10 +149,6 @@ class ShortLink(models.Model):
         unique=True,
         default=shortuuid.uuid,
         verbose_name='Короткий код',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания',
     )
 
     class Meta:

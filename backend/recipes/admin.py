@@ -13,9 +13,9 @@ from recipes.models import (
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'color', 'slug')
+    list_display = ('id', 'name', 'slug')
     search_fields = ('name',)
-    list_filter = ('color',)
+    list_filter = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 
 
@@ -54,5 +54,5 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
 @admin.register(ShortLink)
 class ShortLinkAdmin(admin.ModelAdmin):
-    list_display = ('short_code', 'recipe', 'created_at')
+    list_display = ('short_code', 'recipe')
     search_fields = ('short_code', 'recipe__name')

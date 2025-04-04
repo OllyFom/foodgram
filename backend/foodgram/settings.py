@@ -63,6 +63,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -105,8 +113,6 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
-    'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
         'user': 'api.serializers.users.UserProfileSerializer',
         'user_create': 'api.serializers.users.CreateUserProfileSerializer',
@@ -116,13 +122,6 @@ DJOSER = {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
-    'USER_CREATE_PASSWORD_RETYPE': False,
-    'SET_PASSWORD_RETYPE': False,
-    'SEND_ACTIVATION_EMAIL': False,
-    'SEND_CONFIRMATION_EMAIL': False,
-    'PASSWORD_RESET_CONFIRM_RETYPE': False,
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
