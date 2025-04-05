@@ -39,7 +39,7 @@ services:
       - static:/app/static
       - media:/app/media
       - type: bind
-        source: ./frontend/build
+        source: ../frontend/build
         target: /usr/share/nginx/html
     depends_on:
       - backend
