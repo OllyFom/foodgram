@@ -30,9 +30,8 @@ jobs:
           pip install flake8==6.0.0 flake8-isort==6.0.0 isort==5.12.0
           pip install -r ./backend/requirements.txt
       - name: Check imports with isort
-        run: |
-          isort --check-only --diff backend/
-      - name: Test with flake8 and django tests
+        run: isort --check-only --diff backend/
+      - name: Test with flake8 and Django tests
         env:
           POSTGRES_USER: foodgram_user
           POSTGRES_PASSWORD: foodgram_password
@@ -49,8 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker
@@ -69,8 +67,7 @@ jobs:
     name: Push frontend Docker image to DockerHub
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker
@@ -91,12 +88,11 @@ jobs:
       - build_and_push_backend
       - build_and_push_frontend
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Build frontend locally
         run: |
           docker run --rm -v $(pwd)/frontend/build:/app/build ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest cp -r /usr/share/nginx/html/. /app/build
-      - name: Copy files via ssh
+      - name: Copy files via SSH
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -114,28 +110,29 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
-            echo "POSTGRES_DB=foodgram" > .env
-            echo "POSTGRES_USER=foodgram_user" >> .env
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-            echo "DB_HOST=db" >> .env
-            echo "DB_PORT=5432" >> .env
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-            echo "DEBUG=False" >> .env
-            echo "ALLOWED_HOSTS=netkann.ru,localhost,127.0.0.1,158.160.71.90,foodgram_backend" >> .env
-            echo "DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" >> .env
+            # Создание .env файла, если ещё нет
+            if [ ! -f .env ]; then
+              echo "POSTGRES_DB=foodgram" > .env
+              echo "POSTGRES_USER=foodgram_user" >> .env
+              echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+              echo "DB_HOST=db" >> .env
+              echo "DB_PORT=5432" >> .env
+              echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+              echo "DEBUG=False" >> .env
+              echo "ALLOWED_HOSTS=netkann.ru,localhost,127.0.0.1,158.160.71.90,foodgram_backend" >> .env
+            fi
             # Проверка наличия .env
             if [ ! -f .env ]; then
               echo "Error: .env file not found!"
               exit 1
             fi
+            # Дбновление образов, остановка и запуск контейнеров
             sudo docker compose -f infra/docker-compose.production.yml pull
             sudo docker compose -f infra/docker-compose.production.yml down
             sudo docker compose -f infra/docker-compose.production.yml up -d
+            # Миграции и сборка статики
             sudo docker compose -f infra/docker-compose.production.yml exec -T backend python manage.py migrate
             sudo docker compose -f infra/docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
-            sudo docker compose -f infra/docker-compose.production.yml exec -T backend python manage.py createsuperuser --noinput --username Netka --email ksipsi@gmail.com --first_name Anastasiia --last_name X
-            sudo docker compose -f infra/docker-compose.production.yml exec -T backend python manage.py import_ingredients
-            sudo docker images
 
   send_message:
     runs-on: ubuntu-latest
