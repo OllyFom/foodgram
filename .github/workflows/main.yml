@@ -118,14 +118,14 @@ jobs:
             echo "DB_PORT=5432" >> .env
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             echo "DEBUG=False" >> .env
-            echo "ALLOWED_HOSTS=netkann.ru,localhost,127.0.0.1,158.160.71.90" >> .env
+            echo "ALLOWED_HOSTS=netkann.ru,localhost,127.0.0.1,158.160.71.90,foodgram_backend" >> .env
             echo "DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" >> .env
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
-            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py createsuperuser --noinput --username admin --email admin@example.com
+            sudo docker compose -f docker-compose.production.yml exec -T backend python createsuperuser --noinput --username Netka --email ksipsi@gmail.com --first_name Anastasiia --last_name X
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py import_ingredients
             sudo docker images
 

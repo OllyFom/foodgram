@@ -8,7 +8,7 @@ services:
     image: postgres:13
     container_name: foodgram_db
     env_file:
-      - ../.env
+      - ./.env
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
@@ -17,23 +17,28 @@ services:
     image: netkann/foodgram_backend:latest
     container_name: foodgram_backend
     env_file:
-      - ../.env
+      - ./.env
     depends_on:
       - db
     volumes:
       - static:/app/static
       - media:/app/media
-      - ../.env:/app/.env
-      - ../data:/app/data
+      - ./.env:/app/.env
     expose:
       - "8000"
     restart: always
+
+  frontend:
+    container_name: foodgram-front
+    build: ./frontend
+    volumes:
+      - ./frontend/:/app/result_build/
 
   nginx:
     container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
     env_file:
-      - ../.env
+      - ./.env
     ports:
       - "8080:80"
     volumes:
@@ -43,6 +48,7 @@ services:
       - type: image
         source: netkann/foodgram_frontend:latest
         target: /usr/share/nginx/html
+        image_path: /app/result_build
     depends_on:
       - backend
     restart: always
