@@ -103,7 +103,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "infra/docker-compose.production.yml,infra/nginx.conf,frontend/build"
+          source: "infra/docker-compose.production.yml,infra/nginx.conf"
           target: "foodgram"
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
@@ -128,7 +128,7 @@ jobs:
             sudo docker compose -f docker-compose.production.yml up -d
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
-            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py createsuperuser --noinput --username Netka --email ksipsi@gmail.com --first_name Anastasiia --last_name X
+            sudo docker compose -f docker-compose.production.yml exec -T backend python createsuperuser --noinput --username Netka --email ksipsi@gmail.com --first_name Anastasiia --last_name X
             sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py import_ingredients
             sudo docker images
 
