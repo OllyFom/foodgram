@@ -2,14 +2,14 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+RUN pip install gunicorn==20.1.0
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 COPY data/ingredients.csv /app/data/ingredients.csv
 
 RUN mkdir -p /app/static /app/media
 
-CMD sh -c "python manage.py migrate --noinput && \
-           python manage.py collectstatic --no-input && \
-           gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000"
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]
