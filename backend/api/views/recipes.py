@@ -1,4 +1,5 @@
 # from django.conf import settings
+from django.db.models import Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -13,7 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers.recipes import (
+from api.serializers import (
     IngredientSerializer,
     RecipeMiniSerializer,
     RecipeReadSerializer,
@@ -82,6 +83,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return RecipeReadSerializer
         return RecipeWriteSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if not user.is_authenticated:
+            return queryset.annotate(
+                is_favorited=Exists(Favorite.objects.none()),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.none())
+            )
+
+        favorite_subquery = Favorite.objects.filter(
+            user=user,
+            recipe=OuterRef('pk')
+        )
+
+        cart_subquery = ShoppingCart.objects.filter(
+            user=user,
+            recipe=OuterRef('pk')
+        )
+
+        return queryset.annotate(
+            is_favorited=Exists(favorite_subquery),
+            is_in_shopping_cart=Exists(cart_subquery)
+        )
 
     def perform_create(self, serializer):
         serializer.save()

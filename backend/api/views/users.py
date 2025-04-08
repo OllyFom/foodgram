@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.serializers.users import (
+from api.serializers import (
     AvatarSerializer,
     CreateUserProfileSerializer,
     SetPasswordSerializer,
