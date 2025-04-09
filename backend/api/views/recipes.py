@@ -109,6 +109,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
             is_in_shopping_cart=Exists(cart_subquery)
         )
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save()
+
+        user = request.user
+        favorite_subquery = Favorite.objects.filter(
+            user=user,
+            recipe=OuterRef('pk')
+        )
+        cart_subquery = ShoppingCart.objects.filter(
+            user=user,
+            recipe=OuterRef('pk')
+        )
+        recipe = Recipe.objects.filter(pk=recipe.pk).annotate(
+            is_favorited=Exists(favorite_subquery),
+            is_in_shopping_cart=Exists(cart_subquery)
+        ).first()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            RecipeReadSerializer(recipe, context={'request': request}).data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
+
     def perform_create(self, serializer):
         serializer.save()
 

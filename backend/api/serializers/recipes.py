@@ -1,4 +1,3 @@
-from django.db.models import Exists, OuterRef
 from django.db.transaction import atomic
 
 from drf_extra_fields.fields import Base64ImageField
@@ -7,11 +6,9 @@ from rest_framework import serializers
 from api.serializers.users import UserProfileSerializer
 from foodgram.constants import RECIPE_NAME_MAX_LENGTH
 from recipes.models import (
-    Favorite,
     Ingredient,
     Recipe,
     RecipeIngredient,
-    ShoppingCart,
     Tag,
 )
 
@@ -169,39 +166,18 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             for item in ingredients_data
         ])
 
-    def annotate_recipe(self, recipe, user):
-        if user and user.is_authenticated:
-            favorite_subquery = Favorite.objects.filter(
-                user=user,
-                recipe=OuterRef('pk')
-            )
-            cart_subquery = ShoppingCart.objects.filter(
-                user=user,
-                recipe=OuterRef('pk')
-            )
-            return Recipe.objects.filter(pk=recipe.pk).annotate(
-                is_favorited=Exists(favorite_subquery),
-                is_in_shopping_cart=Exists(cart_subquery),
-            ).first()
-
-        return Recipe.objects.filter(pk=recipe.pk).annotate(
-            is_favorited=Exists(Favorite.objects.none()),
-            is_in_shopping_cart=Exists(ShoppingCart.objects.none()),
-        ).first()
-
     @atomic
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
+        user = self.context['request'].user
         recipe = Recipe.objects.create(
-            author=self.context['request'].user,
+            author=user,
             **validated_data,
         )
         recipe.tags.set(tags)
         self.create_ingredients(recipe, ingredients)
-        return self.annotate_recipe(
-            recipe, self.context['request'].user
-        )
+        return recipe
 
     @atomic
     def update(self, instance, validated_data):
@@ -212,12 +188,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         instance.ingredients.all().delete()
         self.create_ingredients(instance, ingredients)
-
-        user = (
-            self.context.get('request').user
-            if self.context.get('request') else None
-        )
-        return self.annotate_recipe(instance, user)
+        return instance
 
     def to_representation(self, instance):
         return RecipeReadSerializer(

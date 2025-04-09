@@ -1,19 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+from djoser.views import UserViewSet as DjoserUserViewSet
 from api.serializers import (
     AvatarSerializer,
-    CreateUserProfileSerializer,
-    SetPasswordSerializer,
     SubscriptionSerializer,
     UserProfileSerializer,
 )
+from api.serializers.djoser import CustomUserCreateSerializer
 from foodgram.constants import MAX_LIMIT_PAGE_SIZE
 from users.models import Subscription
 
@@ -26,29 +27,52 @@ class UserPagination(PageNumberPagination):
     max_page_size = MAX_LIMIT_PAGE_SIZE
 
 
-class UserViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
-    """Вьюсет пользователей."""
-    queryset = User.objects.all()
-    permission_classes = [permissions.AllowAny]
+class CustomUserViewSet(DjoserUserViewSet):
+    """Кастомный вьюсет пользователей на основе Djoser."""
     pagination_class = UserPagination
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+        if self.action in ('subscriptions', 'subscribe'):
+            queryset = queryset.annotate(recipes_count=Count('recipes'))
+            if self.action == 'subscriptions':
+                user = self.request.user
+                if user.is_authenticated:
+                    queryset = queryset.filter(subscribers__user=user)
+                else:
+                    queryset = queryset.none()
+        return queryset
 
     def get_serializer_class(self):
+        if self.action == 'create':
+            return CustomUserCreateSerializer
         if self.action == 'me':
             return UserProfileSerializer
-        if self.action == 'set_password':
-            return SetPasswordSerializer
         if self.action == 'avatar':
             return AvatarSerializer
-        if self.action == 'create':
-            return CreateUserProfileSerializer
         if self.action in ('subscriptions', 'subscribe'):
             return SubscriptionSerializer
-        return UserProfileSerializer
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(
+            page if page is not None else queryset,
+            many=True,
+            context={'request': request}
+        )
+        return (
+            self.get_paginated_response(serializer.data)
+            if page is not None else Response(serializer.data)
+        )
 
     @action(
         detail=False,
@@ -70,7 +94,6 @@ class UserViewSet(
         serializer = AvatarSerializer(
             user,
             data=request.data,
-            partial=True,
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
@@ -90,38 +113,12 @@ class UserViewSet(
 
     @action(
         detail=False,
-        methods=['post'],
-        permission_classes=[IsAuthenticated]
-    )
-    def set_password(self, request):
-        serializer = SetPasswordSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        user = request.user
-        current_password = serializer.validated_data['current_password']
-        new_password = serializer.validated_data['new_password']
-
-        if not user.check_password(current_password):
-            return Response(
-                {'current_password': 'Неверный текущий пароль.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user.set_password(new_password)
-        user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(
-        detail=False,
         methods=['get'],
         permission_classes=[IsAuthenticated],
         pagination_class=UserPagination
     )
     def subscriptions(self, request):
-        queryset = User.objects.filter(subscribers__user=request.user)
+        queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
             page if page is not None else queryset,
@@ -138,9 +135,9 @@ class UserViewSet(
         methods=['post'],
         permission_classes=[IsAuthenticated]
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, id=None):
         user = request.user
-        author = get_object_or_404(User, pk=pk)
+        author = get_object_or_404(self.get_queryset(), id=id)
 
         if author == user:
             return Response(
@@ -161,9 +158,9 @@ class UserViewSet(
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
-    def unsubscribe(self, request, pk=None):
+    def unsubscribe(self, request, id=None):
         user = request.user
-        author = get_object_or_404(User, pk=pk)
+        author = get_object_or_404(User, id=id)
         subscription = Subscription.objects.filter(user=user, author=author)
 
         if not subscription.exists():

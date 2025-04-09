@@ -8,8 +8,6 @@ from .recipes import (
 )
 from .users import (
     AvatarSerializer,
-    CreateUserProfileSerializer,
-    SetPasswordSerializer,
     SubscriptionSerializer,
     UserProfileSerializer,
 )

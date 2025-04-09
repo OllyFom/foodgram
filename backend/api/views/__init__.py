@@ -5,4 +5,4 @@ from .recipes import (
     TagViewSet,
     redirect_short_link,
 )
-from .users import UserPagination, UserViewSet
+from .users import UserPagination, CustomUserViewSet
