@@ -11,6 +11,7 @@ User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор профиля пользователя."""
+
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
 
@@ -19,7 +20,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'email', 'username',
             'first_name', 'last_name',
-            'avatar', 'is_subscribed'
+            'avatar', 'is_subscribed',
         )
         read_only_fields = fields
 
@@ -35,6 +36,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class AvatarSerializer(serializers.ModelSerializer):
     """Сериализатор аватара."""
+
     avatar = Base64ImageField(required=True)
 
     class Meta:
@@ -42,11 +44,15 @@ class AvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
     def to_representation(self, instance):
-        return {'avatar': instance.avatar.url if instance.avatar else None}
+        return {
+            'avatar': instance.avatar.url
+            if instance.avatar else None
+        }
 
 
 class SubscriptionSerializer(UserProfileSerializer):
     """Сериализатор отображения подписок и рецептов автора."""
+
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(read_only=True)
 
@@ -55,12 +61,15 @@ class SubscriptionSerializer(UserProfileSerializer):
             'id', 'email', 'username',
             'first_name', 'last_name',
             'avatar', 'is_subscribed',
-            'recipes', 'recipes_count'
+            'recipes', 'recipes_count',
         )
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        limit = request.query_params.get('recipes_limit') if request else None
+        limit = (
+            request.query_params.get('recipes_limit')
+            if request else None
+        )
         queryset = obj.recipes.all()
         if limit and limit.isdigit():
             queryset = queryset[:int(limit)]

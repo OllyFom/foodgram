@@ -6,10 +6,7 @@ from rest_framework import serializers
 from api.serializers.users import UserProfileSerializer
 from foodgram.constants import RECIPE_NAME_MAX_LENGTH
 from recipes.models import (
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    Tag,
+    Ingredient, Recipe, RecipeIngredient, Tag,
 )
 
 
@@ -52,7 +49,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserProfileSerializer(read_only=True)
     ingredients = IngredientAmountSerializer(
-        many=True, read_only=True
+        many=True,
+        read_only=True,
     )
     is_favorited = serializers.BooleanField(read_only=True)
     is_in_shopping_cart = serializers.BooleanField(read_only=True)
@@ -128,14 +126,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredient_id = item['ingredient'].id
             if ingredient_id in seen:
                 raise serializers.ValidationError({
-                    'ingredients': 'Ингредиенты не должны повторяться.'
+                    'ingredients': (
+                        'Ингредиенты не должны повторяться.'
+                    )
                 })
             seen.add(ingredient_id)
             if item['amount'] <= 0:
                 raise serializers.ValidationError({
                     'ingredients': (
-                        'Количество ингредиентов '
-                        'должно быть больше одного.'
+                        'Количество ингредиентов должно быть '
+                        'больше одного.'
                     )
                 })
 

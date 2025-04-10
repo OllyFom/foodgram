@@ -3,6 +3,8 @@ from .recipes import (
     RecipePagination,
     RecipeViewSet,
     TagViewSet,
-    redirect_short_link,
 )
-from .users import UserPagination, CustomUserViewSet
+from .users import (
+    CustomUserViewSet,
+    UserPagination,
+)

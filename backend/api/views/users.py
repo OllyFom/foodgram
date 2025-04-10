@@ -1,14 +1,15 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from djoser.views import UserViewSet as DjoserUserViewSet
+
 from api.serializers import (
     AvatarSerializer,
     SubscriptionSerializer,
@@ -23,12 +24,14 @@ User = get_user_model()
 
 class UserPagination(PageNumberPagination):
     """Пагинация пользователей."""
+
     page_size_query_param = 'limit'
     max_page_size = MAX_LIMIT_PAGE_SIZE
 
 
 class CustomUserViewSet(DjoserUserViewSet):
     """Кастомный вьюсет пользователей на основе Djoser."""
+
     pagination_class = UserPagination
     permission_classes = [AllowAny]
 
@@ -67,7 +70,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         serializer = self.get_serializer(
             page if page is not None else queryset,
             many=True,
-            context={'request': request}
+            context={'request': request},
         )
         return (
             self.get_paginated_response(serializer.data)
@@ -77,7 +80,7 @@ class CustomUserViewSet(DjoserUserViewSet):
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def me(self, request):
         serializer = self.get_serializer(request.user)
@@ -87,14 +90,14 @@ class CustomUserViewSet(DjoserUserViewSet):
         detail=False,
         methods=['put'],
         url_path='me/avatar',
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def avatar(self, request):
         user = request.user
         serializer = AvatarSerializer(
             user,
             data=request.data,
-            context={'request': request}
+            context={'request': request},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -106,7 +109,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         if not user.avatar:
             return Response(
                 {'detail': 'Аватар не установлен.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         user.avatar.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -115,7 +118,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         detail=False,
         methods=['get'],
         permission_classes=[IsAuthenticated],
-        pagination_class=UserPagination
+        pagination_class=UserPagination,
     )
     def subscriptions(self, request):
         queryset = self.filter_queryset(self.get_queryset())
@@ -123,7 +126,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         serializer = SubscriptionSerializer(
             page if page is not None else queryset,
             many=True,
-            context={'request': request}
+            context={'request': request},
         )
         return (
             self.get_paginated_response(serializer.data)
@@ -133,7 +136,7 @@ class CustomUserViewSet(DjoserUserViewSet):
     @action(
         detail=True,
         methods=['post'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, id=None):
         user = request.user
@@ -142,18 +145,18 @@ class CustomUserViewSet(DjoserUserViewSet):
         if author == user:
             return Response(
                 {'detail': 'Нельзя подписаться на себя.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if Subscription.objects.filter(user=user, author=author).exists():
             return Response(
                 {'detail': 'Вы уже подписаны на этого пользователя.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         Subscription.objects.create(user=user, author=author)
         serializer = SubscriptionSerializer(
             author,
-            context={'request': request}
+            context={'request': request},
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -166,7 +169,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         if not subscription.exists():
             return Response(
                 {'detail': 'Вы не подписаны на этого пользователя.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         subscription.delete()
