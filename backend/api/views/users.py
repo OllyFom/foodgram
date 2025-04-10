@@ -39,7 +39,9 @@ class CustomUserViewSet(DjoserUserViewSet):
             queryset = queryset.annotate(recipes_count=Count('recipes'))
             if self.action == 'subscriptions':
                 if self.request.user.is_authenticated:
-                    queryset = queryset.filter(subscribers__user=self.request.user)
+                    queryset = queryset.filter(
+                        subscribers__user=self.request.user
+                    )
                 else:
                     queryset = queryset.none()
         return queryset
@@ -58,7 +60,7 @@ class CustomUserViewSet(DjoserUserViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()  # Убрали переменную user
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
