@@ -6,7 +6,6 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingCart,
-    ShortLink,
     Tag,
 )
 
@@ -34,10 +33,16 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author', 'cooking_time')
+    list_display = ('id', 'name', 'author', 'cooking_time', 'favorite_count')
     search_fields = ('name', 'author__username', 'tags__name')
     list_filter = ('tags',)
     inlines = [RecipeIngredientInline]
+
+    def favorite_count(self, obj):
+        """Возвращает количество добавлений рецепта в избранное."""
+        return obj.favorited_by.count()
+
+    favorite_count.short_description = 'Добавлений в избранное'
 
 
 @admin.register(Favorite)
@@ -50,9 +55,3 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     search_fields = ('user__username', 'recipe__name')
-
-
-@admin.register(ShortLink)
-class ShortLinkAdmin(admin.ModelAdmin):
-    list_display = ('short_code', 'recipe')
-    search_fields = ('short_code', 'recipe__name')

@@ -117,6 +117,7 @@ jobs:
               echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
               echo "DB_HOST=db" >> .env
               echo "DB_PORT=5432" >> .env
+              echo "DB_TYPE=postgres" >> .env
               echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
               echo "DEBUG=False" >> .env
               echo "ALLOWED_HOSTS=netkann.ru,localhost,127.0.0.1,158.160.71.90,foodgram_backend" >> .env
@@ -126,7 +127,7 @@ jobs:
               echo "Error: .env file not found!"
               exit 1
             fi
-            # Дбновление образов, остановка и запуск контейнеров
+            # Обновление образов, остановка и запуск контейнеров
             sudo docker compose -f infra/docker-compose.production.yml pull
             sudo docker compose -f infra/docker-compose.production.yml down
             sudo docker compose -f infra/docker-compose.production.yml up -d

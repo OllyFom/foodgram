@@ -10,31 +10,32 @@ User = get_user_model()
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    ordering = ['id']
+    ordering = ['email']
     list_display = (
         'id', 'email', 'username',
-        'first_name', 'last_name', 'is_staff'
+        'first_name', 'last_name', 'is_staff',
     )
     list_filter = ('is_staff', 'is_superuser', 'is_active')
-    search_fields = ('email', 'username', 'first_name', 'last_name')
+    search_fields = (
+        'email', 'username', 'first_name', 'last_name',
+    )
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Личная информация'), {
             'fields': (
                 'username', 'first_name',
-                'last_name', 'avatar'
+                'last_name', 'avatar',
             )
         }),
         (_('Права доступа'), {
             'fields': (
-                'is_active', 'is_staff',
-                'is_superuser', 'groups',
-                'user_permissions'
+                'is_active', 'is_staff', 'is_superuser',
+                'groups', 'user_permissions',
             )
         }),
         (_('Важные даты'), {
-            'fields': ('last_login', 'date_joined')
+            'fields': ('last_login', 'date_joined'),
         }),
     )
 
@@ -42,13 +43,9 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': (
-                'email',
-                'username',
-                'first_name',
-                'last_name',
-                'avatar',
-                'password1',
-                'password2',
+                'email', 'username', 'first_name',
+                'last_name', 'avatar',
+                'password1', 'password2',
             ),
         }),
     )
