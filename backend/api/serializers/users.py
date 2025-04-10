@@ -4,7 +4,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from api.serializers.recipe_mini import RecipeMiniSerializer
-from users.models import User
+from users.models import User   # noqa: F811
 
 User = get_user_model()
 

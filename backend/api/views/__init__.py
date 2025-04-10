@@ -1,7 +1,7 @@
 from .recipes import (
-    IngredientViewSet,
-    RecipePagination,
-    RecipeViewSet,
-    TagViewSet,
+    IngredientViewSet, # noqa: F401
+    RecipePagination, # noqa: F401
+    RecipeViewSet, # noqa: F401
+    TagViewSet, # noqa: F401
 )
-from .users import CustomUserViewSet, UserPagination
+from .users import CustomUserViewSet, UserPagination # noqa: F401
