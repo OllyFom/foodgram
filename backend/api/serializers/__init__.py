@@ -1,7 +1,4 @@
-from .djoser import (
-    CustomUserCreateSerializer,
-    CustomUserSerializer,
-)
+from .djoser import CustomUserCreateSerializer, CustomUserSerializer
 from .recipe_mini import RecipeMiniSerializer
 from .recipes import (
     IngredientAmountSerializer,

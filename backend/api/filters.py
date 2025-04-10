@@ -7,7 +7,6 @@ from django_filters.rest_framework import (
     BooleanFilter,
     CharFilter,
     FilterSet,
-    NumberFilter,
 )
 
 from recipes.models import Ingredient, Recipe
@@ -15,7 +14,6 @@ from recipes.models import Ingredient, Recipe
 
 class IngredientFilter(FilterSet):
     """Фильтр для поиска ингредиентов."""
-
     name = CharFilter(
         field_name='name',
         lookup_expr='istartswith',
@@ -29,7 +27,6 @@ class IngredientFilter(FilterSet):
 
 class RecipeFilter(FilterSet):
     """Фильтр для рецептов."""
-
     tags = AllValuesMultipleFilter(
         field_name='tags__slug',
         help_text='Фильтрация по слагам тегов',
@@ -45,24 +42,26 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = [
-            'tags', 'author', 'is_favorited', 'is_in_shopping_cart',
-        ]
+        fields = ['tags', 'author', 'is_favorited', 'is_in_shopping_cart']
 
     def filter_is_favorited(
         self, queryset: QuerySet, name: str, value: Any
     ) -> QuerySet:
         """Фильтрация рецептов по избранному."""
         user = self.request.user
-        if value and not user.is_anonymous:
-            return queryset.filter(favorited_by__user=user)
-        return queryset.exclude(favorited_by__user=user)
+        if user.is_anonymous:
+            return queryset.none() if value else queryset
+        if value:
+            return queryset.filter(favorite__user=user)
+        return queryset.exclude(favorite__user=user)
 
     def filter_is_in_cart(
         self, queryset: QuerySet, name: str, value: Any
     ) -> QuerySet:
-        """Фильтрация рецептов по наличию покупок."""
+        """Фильтрация рецептов по наличию в корзине."""
         user = self.request.user
-        if value and not user.is_anonymous:
-            return queryset.filter(in_carts__user=user)
-        return queryset.exclude(in_carts__user=user)
+        if user.is_anonymous:
+            return queryset.none() if value else queryset
+        if value:
+            return queryset.filter(cart__user=user)
+        return queryset.exclude(cart__user=user)

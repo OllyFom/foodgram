@@ -4,7 +4,4 @@ from .recipes import (
     RecipeViewSet,
     TagViewSet,
 )
-from .users import (
-    CustomUserViewSet,
-    UserPagination,
-)
+from .users import CustomUserViewSet, UserPagination

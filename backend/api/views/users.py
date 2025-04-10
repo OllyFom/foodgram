@@ -24,14 +24,12 @@ User = get_user_model()
 
 class UserPagination(PageNumberPagination):
     """Пагинация пользователей."""
-
     page_size_query_param = 'limit'
     max_page_size = MAX_LIMIT_PAGE_SIZE
 
 
 class CustomUserViewSet(DjoserUserViewSet):
     """Кастомный вьюсет пользователей на основе Djoser."""
-
     pagination_class = UserPagination
     permission_classes = [AllowAny]
 
@@ -40,9 +38,8 @@ class CustomUserViewSet(DjoserUserViewSet):
         if self.action in ('subscriptions', 'subscribe'):
             queryset = queryset.annotate(recipes_count=Count('recipes'))
             if self.action == 'subscriptions':
-                user = self.request.user
-                if user.is_authenticated:
-                    queryset = queryset.filter(subscribers__user=user)
+                if self.request.user.is_authenticated:
+                    queryset = queryset.filter(subscribers__user=self.request.user)
                 else:
                     queryset = queryset.none()
         return queryset
@@ -61,7 +58,7 @@ class CustomUserViewSet(DjoserUserViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()  # Убрали переменную user
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):

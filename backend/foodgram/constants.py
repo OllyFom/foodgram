@@ -19,6 +19,12 @@ RECIPE_NAME_MAX_LENGTH = 256
 
 UUID_MAX_LENGTH = 22
 
+COOKING_TIME_MIN = 1
+COOKING_TIME_MAX = 1440
+
+INGREDIENT_MIN_AMOUNT = 1
+INGREDIENT_MAX_AMOUNT = 1000
+
 # Регулярное выражение для пользователя
 USERNAME_REGEX = RegexValidator(
     regex=r'^[\w.@+-]+$',
