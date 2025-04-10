@@ -1,7 +1,7 @@
 from .djoser import CustomUserCreateSerializer  # noqa: F401
-from .djoser import CustomUserSerializer
+from .djoser import CustomUserSerializer  # noqa: F401
 from .recipe_mini import RecipeMiniSerializer  # noqa: F401
-from .recipes import (
+from .recipes import (  # noqa: F401
     IngredientSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
