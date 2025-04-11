@@ -16,7 +16,7 @@ class Command(BaseCommand):
             type=str,
             default=os.path.join(
                 settings.BASE_DIR,
-                # '..',
+                # '..', для локального тестирования
                 'data',
                 'ingredients.csv'
             ),
