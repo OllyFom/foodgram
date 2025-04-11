@@ -85,6 +85,8 @@ TELEGRAM_TO — ID чата Telegram для уведомлений
 
 TELEGRAM_TOKEN — токен Telegram-бота
 
+DB_TYPE - тип базы данных (sqlite или postgres)
+
 ---
 
 ## Особенности проекта
