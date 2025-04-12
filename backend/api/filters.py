@@ -1,7 +1,3 @@
-from typing import Any
-
-from django.db.models import QuerySet
-
 from django_filters.rest_framework import (
     AllValuesMultipleFilter,
     BooleanFilter,
@@ -14,6 +10,7 @@ from recipes.models import Ingredient, Recipe
 
 class IngredientFilter(FilterSet):
     """Фильтр для поиска ингредиентов."""
+
     name = CharFilter(
         field_name='name',
         lookup_expr='istartswith',
@@ -27,41 +24,33 @@ class IngredientFilter(FilterSet):
 
 class RecipeFilter(FilterSet):
     """Фильтр для рецептов."""
+
     tags = AllValuesMultipleFilter(
         field_name='tags__slug',
         help_text='Фильтрация по слагам тегов',
     )
     is_favorited = BooleanFilter(
-        method='filter_is_favorited',
+        field_name='is_favorited',
         help_text='Фильтр по избранному',
     )
     is_in_shopping_cart = BooleanFilter(
-        method='filter_is_in_cart',
+        field_name='is_in_shopping_cart',
         help_text='Фильтр по корзине',
     )
 
     class Meta:
         model = Recipe
-        fields = ['tags', 'author', 'is_favorited', 'is_in_shopping_cart']
+        fields = [
+            'tags',
+            'author',
+            'is_favorited',
+            'is_in_shopping_cart',
+        ]
 
-    def filter_is_favorited(
-        self, queryset: QuerySet, name: str, value: Any
-    ) -> QuerySet:
-        """Фильтрация рецептов по избранному."""
-        user = self.request.user
-        if user.is_anonymous:
-            return queryset.none() if value else queryset
-        if value:
-            return queryset.filter(favorite__user=user)
-        return queryset.exclude(favorite__user=user)
+    def filter_queryset(self, queryset):
+        """Отключение фильтров для анонимных пользователей."""
+        if not self.request.user.is_authenticated:
+            self.form.cleaned_data.pop('is_favorited', None)
+            self.form.cleaned_data.pop('is_in_shopping_cart', None)
 
-    def filter_is_in_cart(
-        self, queryset: QuerySet, name: str, value: Any
-    ) -> QuerySet:
-        """Фильтрация рецептов по наличию в корзине."""
-        user = self.request.user
-        if user.is_anonymous:
-            return queryset.none() if value else queryset
-        if value:
-            return queryset.filter(cart__user=user)
-        return queryset.exclude(cart__user=user)
+        return super().filter_queryset(queryset)

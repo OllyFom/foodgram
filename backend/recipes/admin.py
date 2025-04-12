@@ -1,13 +1,7 @@
 from django.contrib import admin
 
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    Tag,
-)
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.user_recipe_models import Favorite, ShoppingCart
 
 
 @admin.register(Tag)
@@ -38,11 +32,10 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('tags',)
     inlines = [RecipeIngredientInline]
 
+    @admin.display(description='Добавлений в избранное')
     def favorite_count(self, obj):
         """Возвращает количество добавлений рецепта в избранное."""
         return obj.favorited_by.count()
-
-    favorite_count.short_description = 'Добавлений в избранное'
 
 
 @admin.register(Favorite)

@@ -15,7 +15,6 @@ from api.serializers import (
     SubscriptionSerializer,
     UserProfileSerializer,
 )
-from api.serializers.djoser import CustomUserCreateSerializer
 from foodgram.constants import MAX_LIMIT_PAGE_SIZE
 from users.models import Subscription
 
@@ -47,8 +46,6 @@ class CustomUserViewSet(DjoserUserViewSet):
         return queryset
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return CustomUserCreateSerializer
         if self.action == 'me':
             return UserProfileSerializer
         if self.action == 'avatar':

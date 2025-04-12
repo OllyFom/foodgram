@@ -4,13 +4,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from api.serializers.users import UserProfileSerializer
-from foodgram.constants import (
-    COOKING_TIME_MAX,
-    COOKING_TIME_MIN,
-    INGREDIENT_MAX_AMOUNT,
-    INGREDIENT_MIN_AMOUNT,
-    RECIPE_NAME_MAX_LENGTH,
-)
+from foodgram.constants import RECIPE_NAME_MAX_LENGTH
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
@@ -46,14 +40,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
-    def validate_amount(self, value):
-        if value < INGREDIENT_MIN_AMOUNT or value > INGREDIENT_MAX_AMOUNT:
-            raise serializers.ValidationError(
-                f'Количество ингредиента должно быть от '
-                f'{INGREDIENT_MIN_AMOUNT} до {INGREDIENT_MAX_AMOUNT}.'
-            )
-        return value
-
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     """Сериализатор рецепта на чтение."""
@@ -61,8 +47,11 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserProfileSerializer(read_only=True)
     ingredients = IngredientAmountSerializer(many=True, read_only=True)
-    is_favorited = serializers.BooleanField(read_only=True)
-    is_in_shopping_cart = serializers.BooleanField(read_only=True)
+    is_favorited = serializers.BooleanField(read_only=True, default=False)
+    is_in_shopping_cart = serializers.BooleanField(
+        read_only=True,
+        default=False,
+    )
     image = serializers.SerializerMethodField()
 
     class Meta:
@@ -102,7 +91,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField(required=True)
     name = serializers.CharField(max_length=RECIPE_NAME_MAX_LENGTH)
-    cooking_time = serializers.IntegerField()
 
     class Meta:
         model = Recipe
@@ -149,17 +137,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         return data
 
-    def validate_cooking_time(self, value):
-        if value < COOKING_TIME_MIN or value > COOKING_TIME_MAX:
-            raise serializers.ValidationError(
-                f'Время приготовления должно быть от {COOKING_TIME_MIN} до '
-                f'{COOKING_TIME_MAX} минут.'
-            )
-        return value
-
     def validate_image(self, value):
         if not value:
-            raise serializers.ValidationError('Наличие картинки обязательно.')
+            raise serializers.ValidationError(
+                'Наличие картинки обязательно.'
+            )
         return value
 
     def create_ingredients(self, recipe, ingredients_data):
@@ -188,7 +170,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         instance = super().update(instance, validated_data)
         instance.tags.set(tags)
-        instance.ingredients.all().delete()
+        instance.recipe_ingredients.clear()
         self.create_ingredients(instance, ingredients)
         return instance
 
