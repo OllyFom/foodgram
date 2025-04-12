@@ -24,10 +24,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return obj.subscribers.filter(user=user).exists()
+        request = self.context.get('request')
+        return (
+            request
+            and not request.user.is_anonymous
+            and obj.subscribers.filter(user=request.user).exists()
+        )
 
     def get_avatar(self, obj):
         return obj.avatar.url if obj.avatar else None

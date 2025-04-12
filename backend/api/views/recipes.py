@@ -1,37 +1,35 @@
-from django.db.models import Exists, OuterRef, Sum
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
-
-from django_filters.rest_framework import DjangoFilterBackend
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import RecipePagination
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (
+from api.serializers.recipe_mini import RecipeMiniSerializer
+from api.serializers.recipes import (
     IngredientSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
     TagSerializer,
 )
-from api.serializers.recipe_mini import RecipeMiniSerializer
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    Tag,
-)
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.user_recipe_models import Favorite, ShoppingCart
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет тегов."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -40,6 +38,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет ингредиентов."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -50,15 +49,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет рецептов."""
+
     queryset = Recipe.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     pagination_class = RecipePagination
-
-    def get_permissions(self):
-        if self.action in ('list', 'retrieve', 'get_link'):
-            return [AllowAny()]
-        return [IsAuthenticated(), IsAuthorOrReadOnly()]
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -66,53 +62,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeWriteSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        user = self.request.user
-
-        if not user.is_authenticated:
-            return queryset.annotate(
-                is_favorited=Exists(Favorite.objects.none()),
-                is_in_shopping_cart=Exists(ShoppingCart.objects.none()),
-            )
-
-        favorite_subquery = Favorite.objects.filter(
-            user=user,
-            recipe=OuterRef('pk'),
-        )
-        cart_subquery = ShoppingCart.objects.filter(
-            user=user,
-            recipe=OuterRef('pk'),
-        )
-        return queryset.annotate(
-            is_favorited=Exists(favorite_subquery),
-            is_in_shopping_cart=Exists(cart_subquery),
-        )
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()
-
-        user = request.user
-        favorite_subquery = Favorite.objects.filter(
-            user=user,
-            recipe=OuterRef('pk'),
-        )
-        cart_subquery = ShoppingCart.objects.filter(
-            user=user,
-            recipe=OuterRef('pk'),
-        )
-        recipe = Recipe.objects.filter(pk=recipe.pk).annotate(
-            is_favorited=Exists(favorite_subquery),
-            is_in_shopping_cart=Exists(cart_subquery),
-        ).first()
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            RecipeReadSerializer(recipe, context={'request': request}).data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
+        return Recipe.objects.with_user_annotations(self.request.user)
 
     def _add_to_model(self, request, pk, model):
         user = request.user
@@ -143,7 +93,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['get'], url_path='get-link')
+    @action(
+        detail=True,
+        methods=['get'],
+        url_path='get-link',
+    )
     def get_link(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
         short_url = request.build_absolute_uri(
@@ -179,7 +133,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         ingredients = (
             RecipeIngredient.objects
-            .filter(recipe__cart__user=user)
+            .filter(recipe__shoppingcart_set__user=user)
             .values(
                 'ingredient__name',
                 'ingredient__measurement_unit',

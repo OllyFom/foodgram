@@ -1,4 +1,3 @@
-from .djoser import CustomUserCreateSerializer  # noqa: F401
 from .djoser import CustomUserSerializer  # noqa: F401
 from .recipe_mini import RecipeMiniSerializer  # noqa: F401
 from .recipes import (  # noqa: F401
