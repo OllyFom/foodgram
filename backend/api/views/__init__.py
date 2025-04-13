@@ -4,4 +4,4 @@ from .recipes import (  # noqa: F401
     RecipeViewSet,
     TagViewSet,
 )
-from .users import CustomUserViewSet, UserPagination  # noqa: F401
+from .users import UserPagination, UserViewSet  # noqa: F401

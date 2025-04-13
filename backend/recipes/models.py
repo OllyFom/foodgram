@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Exists, Manager, OuterRef
 
 import shortuuid
 
@@ -15,9 +16,32 @@ from foodgram.constants import (
     TAG_NAME_MAX_LENGTH,
     UUID_MAX_LENGTH,
 )
-from recipes.managers import RecipeManager
 
 User = get_user_model()
+
+
+class RecipeManager(Manager):
+    """Менеджер для модели рецептов."""
+
+    def with_user_annotations(self, user):
+        if not user.is_authenticated:
+            return self.get_queryset().annotate(
+                is_favorited=Exists(Favorite.objects.none()),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.none()),
+            )
+
+        favorite_subquery = Favorite.objects.filter(
+            user=user,
+            recipe=OuterRef('pk'),
+        )
+        cart_subquery = ShoppingCart.objects.filter(
+            user=user,
+            recipe=OuterRef('pk'),
+        )
+        return self.get_queryset().annotate(
+            is_favorited=Exists(favorite_subquery),
+            is_in_shopping_cart=Exists(cart_subquery),
+        )
 
 
 class Tag(models.Model):
@@ -128,7 +152,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['name']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -183,3 +207,51 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return f'{self.ingredient} в {self.recipe}'
+
+
+class UserRecipeRelation(models.Model):
+    """Абстрактная базовая модель для связи пользователя и рецепта."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set',
+        verbose_name='Пользователь',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set',
+        verbose_name='Рецепт',
+    )
+
+    class Meta:
+        abstract = True
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_%(class)s',
+            )
+        ]
+
+
+class Favorite(UserRecipeRelation):
+    """Модель избранного рецепта."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        return f'{self.user} ♥ {self.recipe}'
+
+
+class ShoppingCart(UserRecipeRelation):
+    """Модель списка покупок."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
+
+    def __str__(self):
+        return f'{self.user} → {self.recipe}'

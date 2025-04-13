@@ -24,8 +24,14 @@ from api.serializers.recipes import (
     RecipeWriteSerializer,
     TagSerializer,
 )
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
-from recipes.user_recipe_models import Favorite, ShoppingCart
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
