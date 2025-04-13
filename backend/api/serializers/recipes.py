@@ -4,7 +4,6 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from api.serializers.users import UserProfileSerializer
-from foodgram.constants import RECIPE_NAME_MAX_LENGTH
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
@@ -90,7 +89,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         required=True,
     )
     image = Base64ImageField(required=True)
-    name = serializers.CharField(max_length=RECIPE_NAME_MAX_LENGTH)
 
     class Meta:
         model = Recipe

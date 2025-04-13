@@ -27,7 +27,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         return (
             request
-            and not request.user.is_anonymous
+            and request.user.is_authenticated
             and obj.subscribers.filter(user=request.user).exists()
         )
 
