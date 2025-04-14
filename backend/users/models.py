@@ -1,12 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from foodgram.constants import (
-    EMAIL_MAX_LENGTH,
-    NAME_MAX_LENGTH,
-    USERNAME_MAX_LENGTH,
-    USERNAME_REGEX,
-)
+from foodgram.constants import (EMAIL_MAX_LENGTH, NAME_MAX_LENGTH,
+                                USERNAME_MAX_LENGTH, USERNAME_REGEX)
 
 
 class User(AbstractUser):

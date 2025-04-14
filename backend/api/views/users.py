@@ -2,32 +2,22 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as DjoserUserViewSet
-
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from api.serializers import (
-    AvatarSerializer,
-    SubscriptionSerializer,
-    UserProfileSerializer,
-)
-from foodgram.constants import MAX_LIMIT_PAGE_SIZE
+from api.serializers import (AvatarSerializer, SubscriptionSerializer,
+                             UserProfileSerializer)
 from users.models import Subscription
+from users.pagination import UserPagination
 
 User = get_user_model()
 
 
-class UserPagination(PageNumberPagination):
-    """Пагинация пользователей."""
-    page_size_query_param = 'limit'
-    max_page_size = MAX_LIMIT_PAGE_SIZE
-
-
 class UserViewSet(DjoserUserViewSet):
     """Вьюсет пользователей на основе Djoser."""
+
     pagination_class = UserPagination
     permission_classes = [AllowAny]
 
@@ -79,8 +69,11 @@ class UserViewSet(DjoserUserViewSet):
     )
     def subscriptions(self, request):
         queryset = User.objects.filter(
-            subscribers__user=self.request.user
-        ).annotate(recipes_count=Count('recipes'))
+            subscribers__user=request.user
+        ).annotate(
+            recipes_count=Count('recipes')
+        ).order_by('username')
+
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(
             page,
@@ -107,13 +100,17 @@ class UserViewSet(DjoserUserViewSet):
                 {'detail': 'Нельзя подписаться на себя.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if Subscription.objects.filter(user=user, author=author).exists():
+
+        subscription, created = Subscription.objects.get_or_create(
+            user=user,
+            author=author,
+        )
+        if not created:
             return Response(
                 {'detail': 'Вы уже подписаны на этого пользователя.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        Subscription.objects.create(user=user, author=author)
         serializer = self.get_serializer(
             author,
             context={'request': request},
@@ -124,16 +121,15 @@ class UserViewSet(DjoserUserViewSet):
     def unsubscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
-        subscription = Subscription.objects.filter(
+        deleted_count, _ = Subscription.objects.filter(
             user=user,
             author=author,
-        )
+        ).delete()
 
-        if not subscription.exists():
+        if deleted_count == 0:
             return Response(
                 {'detail': 'Вы не подписаны на этого пользователя.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
