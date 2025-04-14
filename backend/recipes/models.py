@@ -1,21 +1,16 @@
+import shortuuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Exists, Manager, OuterRef
 
-import shortuuid
-
-from foodgram.constants import (
-    COOKING_TIME_MAX,
-    COOKING_TIME_MIN,
-    INGREDIENT_MAX_AMOUNT,
-    INGREDIENT_MEASURE_MAX_LENGTH,
-    INGREDIENT_MIN_AMOUNT,
-    INGREDIENT_NAME_MAX_LENGTH,
-    RECIPE_NAME_MAX_LENGTH,
-    TAG_NAME_MAX_LENGTH,
-    UUID_MAX_LENGTH,
-)
+from foodgram.constants import (COOKING_TIME_MAX, COOKING_TIME_MIN,
+                                INGREDIENT_MAX_AMOUNT,
+                                INGREDIENT_MEASURE_MAX_LENGTH,
+                                INGREDIENT_MIN_AMOUNT,
+                                INGREDIENT_NAME_MAX_LENGTH,
+                                RECIPE_NAME_MAX_LENGTH, TAG_NAME_MAX_LENGTH,
+                                UUID_MAX_LENGTH)
 
 User = get_user_model()
 
@@ -150,9 +145,13 @@ class Recipe(models.Model):
         default=shortuuid.uuid,
         verbose_name='Короткий код',
     )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации',
+    )
 
     class Meta:
-        ordering = ['name']
+        ordering = ['-pub_date']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 

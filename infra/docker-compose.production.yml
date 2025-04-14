@@ -1,5 +1,6 @@
 volumes:
   pg_data:
+    external: true
   static:
   media:
 
