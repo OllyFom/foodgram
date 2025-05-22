@@ -112,7 +112,6 @@ DB_TYPE - тип базы данных (sqlite или postgres)
 ## Доступ
 
 - **Сайт**: [https://netkann.ru](https://netkann.ru)  
-- **Админка**: [https://netkann.ru/admin/](https://netkann.ru/admin/)
 
 ---
 ## Автор
