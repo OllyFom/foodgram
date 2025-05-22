@@ -116,4 +116,4 @@ DB_TYPE - тип базы данных (sqlite или postgres)
 
 ---
 ## Автор
-**[Анастасия Харькова](https://github.com/AVKharkova)**
+Фомина Ольга А-07-22
